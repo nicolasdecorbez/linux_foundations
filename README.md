@@ -1,4 +1,4 @@
-# Linux Fundations
+# Linux Foundations
 
 Projet du module FDI-SYS1 visant à appréhender les fondamentaux de l’environnement Linux et d'appronfondir nos connaissances en administration système.
 
