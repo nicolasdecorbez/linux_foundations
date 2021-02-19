@@ -461,7 +461,7 @@ Sur Windows, le chemin pour accéder à ce fichier est `C:WINDOWS/system32/drive
 172.16.234.46   symfony.apache2.local
 ```
 
-On sauvegarde, et on teste d'accéder à l'adresse désirée (une capture d'écran est disponible **[ici](symfony.JPG)**).
+On sauvegarde, et on teste d'accéder à l'adresse désirée (une capture d'écran est disponible **[ici](/src/symfony.JPG)**).
 
 ## Jour 1
 
@@ -488,7 +488,7 @@ Puis on installe `Nginx` avec `apt install nginx`. Ses fichiers de configuration
 
 > La mise en place d'un serveur `nginx` qui héberge des applications en `php` nécessite l'installation de plusieurs extensions, notamment `php-fpm`, `php-xml` ou encore `php-curl`.
 
-Dans un premier temps, nous allons modifier le fichier `nginx.conf` situé dans `/etc/nginx`. On sauvegarde la version de base en `.old` et on rempli le nouveau fichier de configuration avec ces lignes : 
+Dans un premier temps, nous allons modifier le fichier `nginx.conf` situé dans `/etc/nginx`. On sauvegarde la version de base en `.old` et on rempli le nouveau fichier de configuration avec ces lignes :
 ```
 # ------------------------------------ #
 #        Modified startup file.        #
@@ -537,12 +537,12 @@ On commence par se rendre dans le dossier `/etc/nginx/sites-availables`, où nou
 server {
         listen 80;
         listen [::]:80;
-        
+
         # On rentre le nom du serveur -> très important
         # pour accéder à tel ou tel server block
         server_name symfony.nginx.local;
-        
-        root /var/www/project/public; 
+
+        root /var/www/project/public;
         index index.php;
 
         location / {
@@ -561,14 +561,14 @@ server {
 }
 ```
 
-Puis celui de **Wordpress** : 
+Puis celui de **Wordpress** :
 ```
 # ------------------------------------ #
 #         Modified server file         #
 #      wordpress.nginx.local.conf      #
 # ------------------------------------ #
 
-upstream php { 
+upstream php {
         # On crée un upstream afin de pouvoir accéder au module fastcgi, via php-cgi.
         server unix:/tmp/php7.4-cgi.socket;
         server 127.0.0.1:9000;
@@ -579,7 +579,7 @@ server {
 
         root /var/www/wordpress;
         index index.php;
-        
+
         # Les deux location ci-dessous sont spécifique à Wordpress
         location = /favicon.ico {
                 log_not_found off;
@@ -596,7 +596,7 @@ server {
                 # On ajoute "?$args" pour éviter d'éventuels conflits avec les permalinks
                 try_files $uri $uri/ /index.php?$args;
         }
-        
+
         # Attention à bien rentrer la bonne version de PHP à la ligne fastcgi_pass.
         location ~ \.php$ {
                 try_files $uri =404;
@@ -605,7 +605,7 @@ server {
                 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
                 include fastcgi_params;
         }
-        
+
         # Spécifique à Wordpress
         location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
                 expires max;
@@ -616,7 +616,7 @@ server {
 
 Maintenant que nos deux *Server Blocks* sont crées, on va devoir les activer. On va donc créer des liens symboliques depuis `sites-availables` vers `sites-enabled`.
 
-On commence par supprimer le lien par défaut, puis on écrit ces commandes : 
+On commence par supprimer le lien par défaut, puis on écrit ces commandes :
 ```
 decorb_n@vm046 [02:22:53] [~]
 -> $ cd /etc/nginx/sites-enabled
@@ -646,14 +646,14 @@ Puis on teste ces adresses dans un navigateur : la redirection se fait parfaitem
 
 ### Étape 15 : Sécurisation de notre serveur avec `fail2ban`
 
-Afin de sécuriser notre serveur, on va installer puis intégrer `fail2ban` à `nginx` et `ssh` pour chercher des tentatives répétées de connexions échouées, puis de bannir en fonction de sa configuration. 
+Afin de sécuriser notre serveur, on va installer puis intégrer `fail2ban` à `nginx` et `ssh` pour chercher des tentatives répétées de connexions échouées, puis de bannir en fonction de sa configuration.
 
-L'installation se fait assez simplement avec `apt install fail2ban`, on peut commencer à travailler dessus : la sécurisation de `nginx` va se faire en 2 étapes : 
+L'installation se fait assez simplement avec `apt install fail2ban`, on peut commencer à travailler dessus : la sécurisation de `nginx` va se faire en 2 étapes :
 
 - Création d'un filtre
 - Création d'une *jail*
 
-D'abord, on commence par aller jeter un coup d'ailleurs à l'apparence de ce qu'on recherche, dans les logs de nginx (ils se trouvent dans `/var/log/nginx/error.log`). Ci-dessous se trouvent celles associées à une erreur **403** : 
+D'abord, on commence par aller jeter un coup d'ailleurs à l'apparence de ce qu'on recherche, dans les logs de nginx (ils se trouvent dans `/var/log/nginx/error.log`). Ci-dessous se trouvent celles associées à une erreur **403** :
 ```
 decorb_n@vm046 [17:42:07] [~]
 -> $ sudo cat /var/log/nginx/error.log | grep forbidden
@@ -664,12 +664,12 @@ decorb_n@vm046 [17:42:07] [~]
 [...]
 ```
 
-On remarque donc un schéma composé de : 
+On remarque donc un schéma composé de :
 - Une balise **`[error]`** qui nous indique que la ligne est bien une erreur. (Il existe également `[emerge]`, `[alert]`, etc.)
 - Un nombre (**`115784`** par exemple), puis un **`#`** et de nouveau un nombre.
 - Du mot **`forbidden`** qui nous indique que c'est bien une erreur 403.
 
-Nous allons donc écrire une expression standard afin de réaliser ce schéma et de récupérer l'ip du client, puis on le met dans un nouveau filtre `nginx-forbidden.conf` dans `/etc/fail2ban/filter.d` : 
+Nous allons donc écrire une expression standard afin de réaliser ce schéma et de récupérer l'ip du client, puis on le met dans un nouveau filtre `nginx-forbidden.conf` dans `/etc/fail2ban/filter.d` :
 ```
 # -------------------------------- #
 # Filtre pour l'erreur 403 (Nginx) #
@@ -681,7 +681,7 @@ failregex = .* \[error\] \d*\#\d*: \*\d* .* forbidden.* client: <HOST>, .*$
 ignoreregex =
 ```
 
-On teste le fitre avec `fail2ban-regex`. J'utilise également `grep -c` afin de comparer les résultats obtenus: 
+On teste le fitre avec `fail2ban-regex`. J'utilise également `grep -c` afin de comparer les résultats obtenus:
 ```
 decorb_n@vm046 [17:21:06] [/etc/fail2ban/filter.d]
 -> $ sudo fail2ban-regex /var/log/nginx/error.log /etc/fail2ban/filter.d/nginx-forbidden.conf
@@ -720,7 +720,7 @@ decorb_n@vm046 [17:57:26] [/etc/fail2ban]
 
 ```
 
-Mon filtre est donc opérationnel. Je crée donc la *jail* `nginx-forbidden.conf` dans `/etc/fail2ban/jail.d` : 
+Mon filtre est donc opérationnel. Je crée donc la *jail* `nginx-forbidden.conf` dans `/etc/fail2ban/jail.d` :
 ```
 # ------------------------------ #
 # Jail pour l'erreur 403 (Nginx) #
@@ -735,7 +735,7 @@ logpath = /var/log/nginx/*error*.log
 maxretry = 5
 ```
 
-J'en profite pour aller modifier le temps de ban par défaut dans le fichier `/etc/fail2ban/jail.local` la ligne suivante : 
+J'en profite pour aller modifier le temps de ban par défaut dans le fichier `/etc/fail2ban/jail.local` la ligne suivante :
 ```
 [DEFAULT]
 
@@ -772,7 +772,7 @@ maxretry = 7
 port = 2242
 ```
 
-Puis on teste de nouveau : 
+Puis on teste de nouveau :
 ```
 decorb_n@vm046 [18:27:07] [/etc/fail2ban]
 -> $ sudo fail2ban-client -d
@@ -785,9 +785,9 @@ decorb_n@vm046 [18:27:07] [/etc/fail2ban]
 ['start', 'sshd']
 ```
 
-Et voilà, notre `fail2ban` est correctement configuré ! On peut maintenant utiliser les commandes suivantes pour : 
+Et voilà, notre `fail2ban` est correctement configuré ! On peut maintenant utiliser les commandes suivantes pour :
 - **`fail2ban-client status`** : Voir les jails actives.
 - **`fail2ban-client set <jail> unbanip <IP>`** : Débloquer une IP bloquée.
 - **`fail2ban-client status <jail>`** : Voir quelles IPs ont été bloquées (par jail).
 
-> Un autre méthode pour voir les IPs bloquées est d'affichier les logs de `fail2ban` puis de grep dessus (`cat /var/log/fail2ban.log | grep -F -e "Ban"`). Néanmoins, cette méthode affichera des IPs bloquées dans le passé, mais peut-être débloquées depuis. 
+> Un autre méthode pour voir les IPs bloquées est d'affichier les logs de `fail2ban` puis de grep dessus (`cat /var/log/fail2ban.log | grep -F -e "Ban"`). Néanmoins, cette méthode affichera des IPs bloquées dans le passé, mais peut-être débloquées depuis.
