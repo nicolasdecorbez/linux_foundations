@@ -463,7 +463,7 @@ Sur Windows, le chemin pour accéder à ce fichier est `C:WINDOWS/system32/drive
 
 On sauvegarde, et on teste d'accéder à l'adresse désirée (une capture d'écran est disponible **[ici](/src/symfony.JPG)**).
 
-## Jour 1
+## Jour 4
 
 ### Étape 13 : Mise en place d'un CronJob
 
