@@ -41,7 +41,7 @@ Port 2242
 
 ### Étape 2 : Création de 3 groupes et de leurs utilisateurs
 
-On crée un groupe avec la commande `sudo groupadd [name] -g [gid]`.
+On crée un groupe avec la commande `groupadd [name] -g [gid]`.
 
 On vérifie ensuite si les modifications ont bien été prises en compte en regardant dans le fichier **/etc/group** et on peut lire, après la création des 3 groupes :
 ```
@@ -50,9 +50,9 @@ compta:x:4343:
 commercial:x:4444:
 ```
 
-On crée ensuite un utilisateur avec la commande `sudo useradd [name] -g [gid_du_groupe]`.
+On crée ensuite un utilisateur avec la commande `useradd [name] -g [gid_du_groupe]`.
 
-On l'ajoute ensuite à un groupe avec `sudo gpasswd -a [name] [group_name]`.
+On l'ajoute ensuite à un groupe avec `gpasswd -a [name] [group_name]`.
 
 On vérifie ensuite dans le fichier **/etc/group** si les utilisateurs sont bien assignés aux groupes désirés :
 ```
@@ -63,9 +63,9 @@ commercial:x:4444:marc,jean,tata
 
 ### Étape 3 : Création des répertoires dans `/data`
 
-On crée notre répertoire **/data** ainsi que les sous-répertoires **/data/admin**, **/data/compta** et **/data/commercial** avec `sudo mkdir`.
+On crée notre répertoire **/data** ainsi que les sous-répertoires **/data/admin**, **/data/compta** et **/data/commercial** avec `mkdir`.
 
-On applique ensuite les permissions requises avec la commande `sudo setfacl -Rm g:[groupname]:[perms] /data/[repo]`. On vérifie ensuite avec la commande `getfacl /data/[repo]/` :
+On applique ensuite les permissions requises avec la commande `setfacl -Rm g:[groupname]:[perms] /data/[repo]`. On vérifie ensuite avec la commande `getfacl /data/[repo]/` :
 ```
 getfacl: Removing leading '/' from absolute path names
 # file: data/admin/
@@ -86,13 +86,13 @@ Pour `[perms]`, on rentre donc `7` pour définir tous les droits, `4` pour les d
 
 On crée notre répertoire `coms` dans `data/compta` et 3 fichier (`com_marc`, `com_jean` et `com_tata`) dans ce dernier.
 
-Avec la configuration actuelle, il est impossible pour les membres du groupe `commercial` d'acceder à ce dossier. Pour ce faire, on doit rentrer la commande `sudo setfacl -Rm g:commercial:7 /data/compta/coms` afin de leurs permettre d'accéder aux fichiers. Aussi, pour permettre de nous déplacer dans `/data/compta/coms`, nous devons donner les droits `x` à `commercial` pour le dossier `compta` : `sudo setfacl -m g:commercial:1 /data/compta`.
+Avec la configuration actuelle, il est impossible pour les membres du groupe `commercial` d'acceder à ce dossier. Pour ce faire, on doit rentrer la commande `setfacl -Rm g:commercial:7 /data/compta/coms` afin de leurs permettre d'accéder aux fichiers. Aussi, pour permettre de nous déplacer dans `/data/compta/coms`, nous devons donner les droits `x` à `commercial` pour le dossier `compta` : `setfacl -m g:commercial:1 /data/compta`.
 
 On se connecte ensuite avec chaque utilisateur du groupe `commercial` et crée les fichiers respectifs par utilisateurs. Enfin, on se connecte avec `Marc` et on essaye d'ouvrir `com_jean`. Ce fichier à les permissions `r--`, il peut donc l'ouvrir pour le lire mais ne peut pas l'éditer.
 
 Les utilisateurs du groupe `commercial` auront tous accès aux fichiers présents dans ce répertoire car aucune règle n'est spécifié afin de restreindre l'accès à ces fichiers.
 
-Pour restreindre l'accès, nous pourrions utiliser `sudo setfacl -m u:jean:7 /data/compta/coms/com_jean` puis `sudo setfacl -m u::0 /data/compta/coms/com_jean` afin qu'il soit le seul à pouvoir y avoir accès.
+Pour restreindre l'accès, nous pourrions utiliser `setfacl -m u:jean:7 /data/compta/coms/com_jean` puis `setfacl -m u::0 /data/compta/coms/com_jean` afin qu'il soit le seul à pouvoir y avoir accès.
 
 ## Jour 2
 
@@ -133,7 +133,7 @@ On se connecte ensuite avec un utilisateur avec `su $user` ou en *ssh* et lance 
 
 > Pour aller plus vite, je vais utiliser cette combinaison de commandes pour éviter de chercher : `printenv | grep bureau && printenv | grep etage && printenv | grep surnom`.
 
-```
+```console
 $ printenv | grep -F -e bureau -e etage -e surnom
 bureau=1
 etage=2
@@ -142,15 +142,15 @@ surnom=3
 
 ### Étape 7 : Installation d'Apache et de PHP
 
-Pour l'installation d'*Apache 2.4*, on utilise simplement `sudo apt install apache2`. En revanche, pour l'installation de *PHP 7.4*, la méthode est un peu plus complexe :
+Pour l'installation d'*Apache 2.4*, on utilise simplement `apt install apache2`. En revanche, pour l'installation de *PHP 7.4*, la méthode est un peu plus complexe :
 
-On commence par télécharger la **clé GPG** : `sudo wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg`.
-Puis on ajoute notre **dépôt PPA** : `echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/php.list`.
-Enfin, on installe **PHP 7.4** : `sudo apt -y install php7.4`.
+On commence par télécharger la **clé GPG** : `wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg`.
+Puis on ajoute notre **dépôt PPA** : `echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/php.list`.
+Enfin, on installe **PHP 7.4** : `apt -y install php7.4`.
 
 On teste notre version avec `php -v`:
-```
-decorb_n@vm046:~$ php -v
+```console
+$ php -v
 PHP 7.4.15 (cli) (built: Feb 12 2021 14:49:58) ( NTS )
 Copyright (c) The PHP Group
 Zend Engine v3.4.0, Copyright (c) Zend Technologies
@@ -158,8 +158,8 @@ Zend Engine v3.4.0, Copyright (c) Zend Technologies
 ```
 
 Ensuite, on bloque les mise à jours de ces paquets avec la commande `apt-mark hold <nom-du-paquet>`. Ce qui nous donne :
-```
-decorb_n@vm046:~$ apt-mark showhold
+```console
+$ apt-mark showhold
 apache2
 chef
 php7.4
@@ -179,8 +179,8 @@ ssh-rsa <key> scholt_k@vm055
 ```
 
 On teste ensuite de se connecter, en tant que *bob*, à la VM de notre partenaire :
-```
-decorb_n@vm046:~/.ssh$ ssh bob@172.16.234.55 -p 2242
+```console
+$ ssh bob@172.16.234.55 -p 2242
 Linux vm055 4.9.0-8-amd64 #1 SMP Debian 4.9.144-3.1 (2019-02-19) x86_64
 
 The programs included with the Debian GNU/Linux system are free software;
@@ -199,8 +199,8 @@ Pas de mot de passe, ça a donc marché.
 D'abord, nous devons configurer nos clés SSH entre les deux machines virtuelles afin de pouvoir synchroniser les dossiers (Non essentiel, mais permet d'éviter de s'échanger des mots de passes lors de la connexion SSH).
 
 Ensuite, nous pouvons rentrer la commande pour synchroniser les dossier via SSH :
-```
-rsync -vae 'ssh -p2242' --no-p --delete /data/admin/configurations <username>@<VM>:/data/admin/
+```console
+$ rsync -vae 'ssh -p2242' --no-p --delete /data/admin/configurations <username>@<VM>:/data/admin/
 ```
 
 Nous pouvons décomposer la commande de la sorte :
@@ -211,8 +211,8 @@ Nous pouvons décomposer la commande de la sorte :
 - `delete` : on supprime, dans la destination, les fichiers qui ne sont plus présents dans notre source.
 
 On rentre ensuite nos chemins : la source (`/data/admin/configurations`) puis la destination (`<username>@<VM>:/data/admin/`, où `<username>@<VM>` est l'adresse de connexion SSH). On lance, et on obtient :
-```
-decorb_n@vm046:~$ rsync -vae 'ssh -p2242' --no-p --delete /data/admin/configurations scholt_k@172.16.234.55:/data/admin/
+```console
+$ rsync -vae 'ssh -p2242' --no-p --delete /data/admin/configurations scholt_k@172.16.234.55:/data/admin/
 sending incremental file list
 configurations/ben
 configurations/kev
@@ -224,8 +224,8 @@ total size is 0  speedup is 0.00
 ```
 
 Puis on vérifie notre dossier sur la machine distante :
-```
-scholt_k@vm055:~$ ls -l /data/admin/configurations/
+```console
+$ ls -l /data/admin/configurations/
 total 0
 -rw-r--r-- 1 scholt_k scholt_k 0 Feb 16 19:59 ben
 -rw-r--r-- 1 scholt_k scholt_k 0 Feb 16 19:59 kev
@@ -239,9 +239,9 @@ total 0
 
 Pour l'installation de Wordpress, nous devons d'abord installer et configurer quelques outils, appelés plus communément LAMP (pour Linux, Apache, MySQL et PHP).
 
-On commence par installer notre gestionnaire de base de données, **MariaDB** avec `sudo apt install mariadb-server`. Puis nous allons créer un nouvel utilisateur et une nouvelle base de données :
-```
-decorb_n@vm046:~$ sudo mysql
+On commence par installer notre gestionnaire de base de données, **MariaDB** avec `apt install mariadb-server`. Puis nous allons créer un nouvel utilisateur et une nouvelle base de données :
+```console
+# mysql
 
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 121
@@ -259,11 +259,11 @@ Bye
 ```
 
 Ensuite, on va faire en sorte qu'**Apache2** utilise **PHP 7.4** et non PHP 7.0. Pour ça, on rentre ces commandes :
-```
-decorb_n@vm046:~$ sudo a2dismod php7.0
+```console
+#a2dismod php7.0
 Module php7.0 successfully disabled
 
-decorb_n@vm046:~$ sudo a2enmod php7.4
+# a2enmod php7.4
 Considering dependency mpm_prefork for php7.4:
 Considering conflict mpm_event for mpm_prefork:
 Considering conflict mpm_worker for mpm_prefork:
@@ -276,19 +276,19 @@ Run the following command to apply the changes made :
 ```
 
 Et on installe enfin une (ou des) extension pour **PHP 7.4** :
-```
-sudo apt-get -y install php7.4-mysql
+```console
+# apt-get -y install php7.4-mysql
 ```
 
 > On pourrait d'ailleurs installer d'autres extensions comme php7.4-curl pour utiliser le CMS WordPress, ou encore php7.4-xml, php7.4-dev, etc. en fonction de nos besoins.
 
 Une fois la préparation de notre système fait, on peut commencer à intégrer WordPress. On lance ces commandes :
-```
-decorb_n@vm046:~$ cd /var/www/html
-decorb_n@vm046:/var/www/html$ sudo wget http://fr.wordpress.org/latest-fr_FR.tar.gz
-decorb_n@vm046:/var/www/html$ sudo tar -xf latest-fr_FR.tar.gz
-decorb_n@vm046:/var/www/html$ rm index.html
-decorb_n@vm046:/var/www/html$ sudo mv worpress/* .
+```console
+# cd /var/www/html
+# wget http://fr.wordpress.org/latest-fr_FR.tar.gz
+# tar -xf latest-fr_FR.tar.gz
+# rm index.html
+# mv worpress/* .
 ```
 
 On crée le fichier `phpinfo.php` dans notre dossier **WordPress** pour avoir des informations sur notre version de **PHP** utilisée, et on écrit les lignes suivantes dans ce dernier :
@@ -305,16 +305,16 @@ Ensuite, on accède à notre site via l'adresse IP de notre VM, on lance la conf
 ### Étape 11 : Renseignements sur PHP
 
 Pour afficher l'emplacement du binaire PHP, on peut utiliser les commandes `php -i | grep "_ => /"` et `type php` :
-```
-decorb_n@vm046:~$ php -i | grep "_ => /"
+```console
+$ php -i | grep "_ => /"
 _ => /usr/bin/php
-decorb_n@vm046:~$ type php
+$ type php
 php is hashed (/usr/bin/php)
 ```
 
 Pour afficher la version de PHP installée :
-```
-decorb_n@vm046:~$ php -v
+```console
+$ php -v
 PHP 7.4.15 (cli) (built: Feb 12 2021 14:49:58) ( NTS )
 Copyright (c) The PHP Group
 Zend Engine v3.4.0, Copyright (c) Zend Technologies
@@ -322,17 +322,17 @@ Zend Engine v3.4.0, Copyright (c) Zend Technologies
 ```
 
 L'installation de **PHP 5.6** se fait facilement avec `apt install php5.6`. On vérifie qu'il est bien installé avec la commande `php5.6 -v` :
-```
-decorb_n@vm046:~$ php5.6 -v
+```console
+$ php5.6 -v
 PHP 5.6.40-41+0~20210213.47+debian9~1.gbp6fd845 (cli)
 Copyright (c) 1997-2016 The PHP Group
 Zend Engine v2.6.0, Copyright (c) 1998-2016 Zend Technologies
     with Zend OPcache v7.0.6-dev, Copyright (c) 1999-2016, by Zend Technologies
 ```
 
-Afin que **PHP 7.4** soit notre version de PHP par défaut, il faut lancer la commande `sudo update-alternatives --config php`, puis de regarder si les modifications ont bien été réalisées :
-```
-decorb_n@vm046:~$ sudo update-alternatives --config php
+Afin que **PHP 7.4** soit notre version de PHP par défaut, il faut lancer la commande `update-alternatives --config php`, puis de regarder si les modifications ont bien été réalisées :
+```console
+# update-alternatives --config php
 There are 3 choices for the alternative php (providing /usr/bin/php).
 
   Selection    Path             Priority   Status
@@ -344,7 +344,7 @@ There are 3 choices for the alternative php (providing /usr/bin/php).
 Press <enter> to keep the current choice[*], or type selection number: 2
 update-alternatives: using /usr/bin/php7.4 to provide /usr/bin/php (php) in manual mode
 
-decorb_n@vm046:~$ php -v
+$ php -v
 PHP 7.4.15 (cli) (built: Feb 12 2021 14:49:58) ( NTS )
 Copyright (c) The PHP Group
 Zend Engine v3.4.0, Copyright (c) Zend Technologies
@@ -358,27 +358,27 @@ Sur le site des prérequis pour l'installation de [Symfony](https://symfony.com/
 - [Composer](https://getcomposer.org/)
 
 On va commencer par l'installation de **Composer** :
-```
-decorb_n@vm046:~$ php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-decorb_n@vm046:~$ php -r "if (hash_file('sha384', 'composer-setup.php') === '756890a4488ce9024fc62c56153228907f1545c228516cbf63f885e036d37e9a59d27d63f46af1d4d07ee0f76181c7d3') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+```console
+$ php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+$ php -r "if (hash_file('sha384', 'composer-setup.php') === '756890a4488ce9024fc62c56153228907f1545c228516cbf63f885e036d37e9a59d27d63f46af1d4d07ee0f76181c7d3') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
 Installer verified
 
-decorb_n@vm046:~$ php composer-setup.php
+$ php composer-setup.php
 All settings correct for using Composer
 Downloading...
 
 Composer (version 2.0.9) successfully installed to: /home/decorb_n/composer.phar
 Use it: php composer.phar
 
-decorb_n@vm046:~$ php -r "unlink('composer-setup.php');"
+$ php -r "unlink('composer-setup.php');"
 ```
 
 Puis on le rend accessible depuis partout sur la machine :
-```
-decorb_n@vm046:~$ mv composer.phar composer
-decorb_n@vm046:~$ chmod a+x composer
-decorb_n@vm046:~$ sudo mv composer /usr/local/bin/composer
-decorb_n@vm046:~$ composer
+```console
+# mv composer.phar composer
+# chmod a+x composer
+# mv composer /usr/local/bin/composer
+# composer
    ______
   / ____/___  ____ ___  ____  ____  ________  _____
  / /   / __ \/ __ `__ \/ __ \/ __ \/ ___/ _ \/ ___/
@@ -390,8 +390,8 @@ Composer version 2.0.9 2021-01-27 16:09:27
 ```
 
 Ensuite, on va installer **Symfony CLI**, qui va nous permettre de créer facilement des applications, et qui embarques plusieurs outils très utiles comme le `symfony check:requirements`. On va également faire en sorte de l'installer globalement :
-```
-decorb_n@vm046:~$ wget https://get.symfony.com/cli/installer -O - | bash
+```console
+$ wget https://get.symfony.com/cli/installer -O - | bash
 [...]
 The Symfony CLI v4.22.0 was installed successfully!
 
@@ -406,13 +406,13 @@ Or install it globally on your system:
 
 Then start a new shell and run 'symfony'
 
-decorb_n@vm046:~$ logout
+$ logout
 Connection to 172.16.234.46 closed.
 
-PS C:\Users\Nico\AppData\Roaming\eDEX-UI> ssh decorb_n@172.16.234.46 -p 2242
+$ ssh decorb_n@172.16.234.46 -p 2242
 decorb_n@172.16.234.46's password:
 
-decorb_n@vm046:~$ symfony
+$ symfony
 Symfony CLI version v4.22.0 (c) 2017-2021 Symfony SAS
 Symfony CLI helps developers manage projects, from local code to remote infrastructure
 [...]
@@ -420,7 +420,7 @@ Symfony CLI helps developers manage projects, from local code to remote infrastr
 
 On fait donc une vérification de notre système avec `symfony check:requirements` :
 ```
-decorb_n@vm046:~$ symfony check:requirements
+$ symfony check:requirements
 
 Symfony Requirements Checker
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -447,12 +447,12 @@ On se rend dans le dossier de notre apllication et lance `symfony server:start`,
 On va maintenant la déplacer dans le dossier `/var/www` pour la rendre accessible par **Apache**, qu'on va mainteant configurer. Je vais créer le fichier `symfony_application.conf` ([Disponible ici](src/symfony_application.conf)) qui contiendra la configuration du *Virtual Host* de notre application.
 
 Une fois notre fichier de configuration réalisé, on peut le placer dans `/etc/apache2/sites-available`, puis on exécute ces commandes :
-```
-decorb_n@vm046:~$ sudo rm /etc/apache2/sites-enabled/000-default.conf
-decorb_n@vm046:~$ sudo ln -s /etc/apache2/sites-available/symfony_application.conf /etc/apache2/sites-enabled/symfony_application.conf
+```console
+# rm /etc/apache2/sites-enabled/000-default.conf
+# ln -s /etc/apache2/sites-available/symfony_application.conf /etc/apache2/sites-enabled/symfony_application.conf
 ```
 
-Les fichiers présents dans `/etc/apache2/sites-enabled` sont uniquement des liens symboliques faisant référence aux *Virtual Hosts* présents dans `/etc/apache2/sites-available`. On supprime donc le lien symbolique vers le fichier par défaut, puis on en crée un nouveau vers notre nouveau fichier de configuration. Enfin, on redémarre Apache avec `sudo systemctl restart apache2`.
+Les fichiers présents dans `/etc/apache2/sites-enabled` sont uniquement des liens symboliques faisant référence aux *Virtual Hosts* présents dans `/etc/apache2/sites-available`. On supprime donc le lien symbolique vers le fichier par défaut, puis on en crée un nouveau vers notre nouveau fichier de configuration. Enfin, on redémarre Apache avec `systemctl restart apache2`.
 
 En se connectant avec notre adresse IP, on arrive directement sur notre `index.php`. Il faut maintenant aller modifier le fichier `hosts` sur notre machine hôte.
 
@@ -467,7 +467,7 @@ On sauvegarde, et on teste d'accéder à l'adresse désirée (une capture d'écr
 
 ### Étape 13 : Mise en place d'un CronJob
 
-Pour mettre en place un `CronJob` sur l'utilisateur `john`, on lance la commande `sudo crontab -u john -e` et on écrit cette ligne à la fin du fichier :
+Pour mettre en place un `CronJob` sur l'utilisateur `john`, on lance la commande `crontab -u john -e` et on écrit cette ligne à la fin du fichier :
 
 ```
 42 23 * * 3,6 systemctl restart apache2
@@ -479,9 +479,9 @@ Le redémarrage d'`Apache` aura donc lieu chaque **mercredi** et **samedi** à *
 
 On commence par arrêter le service `apache2`, puis on le désactive :
 
-```
-sudo systemctl stop apache2
-sudo systemctl disable apache2
+```console
+# systemctl stop apache2
+# systemctl disable apache2
 ```
 
 Puis on installe `Nginx` avec `apt install nginx`. Ses fichiers de configurations sont stockés dans `/etc/nginx`.
@@ -617,18 +617,14 @@ server {
 Maintenant que nos deux *Server Blocks* sont crées, on va devoir les activer. On va donc créer des liens symboliques depuis `sites-availables` vers `sites-enabled`.
 
 On commence par supprimer le lien par défaut, puis on écrit ces commandes :
-```
-decorb_n@vm046 [02:22:53] [~]
--> $ cd /etc/nginx/sites-enabled
+```console
+# cd /etc/nginx/sites-enabled
 
-decorb_n@vm046 [02:23:10] [/etc/nginx/sites-enabled]
--> $ sudo ln -s ../sites-availables/wordpress.nginx.local.conf .
+# ln -s ../sites-availables/wordpress.nginx.local.conf .
 
-decorb_n@vm046 [02:22:22] [/etc/nginx/sites-enabled]
--> $ sudo ln -s ../sites-availables/symfony.nginx.local.conf .
+# ln -s ../sites-availables/symfony.nginx.local.conf .
 
-decorb_n@vm046 [02:22:38] [/etc/nginx/sites-enabled]
--> $ ls -l
+$ ls -l
 total 0
 lrwxrwxrwx 1 root root  25 Feb 18 21:31 wordpress.nginx.local.conf -> ../sites-available/wordpress.nginx.local.conf
 lrwxrwxrwx 1 root root  47 Feb 18 21:41 symfony.nginx.local.conf -> ../sites-available/symfony.nginx.local.conf
@@ -654,9 +650,8 @@ L'installation se fait assez simplement avec `apt install fail2ban`, on peut com
 - Création d'une *jail*
 
 D'abord, on commence par aller jeter un coup d'ailleurs à l'apparence de ce qu'on recherche, dans les logs de nginx (ils se trouvent dans `/var/log/nginx/error.log`). Ci-dessous se trouvent celles associées à une erreur **403** :
-```
-decorb_n@vm046 [17:42:07] [~]
--> $ sudo cat /var/log/nginx/error.log | grep forbidden
+```console
+# cat /var/log/nginx/error.log | grep forbidden
 [...]
 2021/02/18 11:35:44 [error] 115784#115784: *1 directory index of "/var/www/html/" is forbidden, client: 172.16.14.96, server: wordpress.nginx.local, request: "GET / HTTP/1.1", host: "172.16.234.46"
 2021/02/18 11:36:27 [error] 115784#115784: *3 directory index of "/var/www/html/" is forbidden, client: 172.16.14.107, server: wordpress.nginx.local, request: "GET / HTTP/1.1", host: "172.16.234.46"
@@ -682,9 +677,8 @@ ignoreregex =
 ```
 
 On teste le fitre avec `fail2ban-regex`. J'utilise également `grep -c` afin de comparer les résultats obtenus:
-```
-decorb_n@vm046 [17:21:06] [/etc/fail2ban/filter.d]
--> $ sudo fail2ban-regex /var/log/nginx/error.log /etc/fail2ban/filter.d/nginx-forbidden.conf
+```console
+# fail2ban-regex /var/log/nginx/error.log /etc/fail2ban/filter.d/nginx-forbidden.conf
 
 Running tests
 =============
@@ -714,8 +708,7 @@ Lines: 283 lines, 0 ignored, 177 matched, 106 missed
 
 Missed line(s): too many to print.  Use --print-all-missed to print all 106 lines
 
-decorb_n@vm046 [17:57:26] [/etc/fail2ban]  
--> $ sudo cat /var/log/nginx/error.log | grep forbidden -c
+# cat /var/log/nginx/error.log | grep forbidden -c
 177
 
 ```
@@ -748,9 +741,8 @@ maxretry = 5
 ```
 
 Puis lance la commande `fail2ban-client -d` pour tester ma nouvelle *jail* :
-```
-decorb_n@vm046 [18:16:45] [/etc/fail2ban]
--> $ sudo fail2ban-client -d
+```console
+# fail2ban-client -d
 [...]
 ['start', 'nginx-forbidden']
 ```
@@ -773,9 +765,8 @@ port = 2242
 ```
 
 Puis on teste de nouveau :
-```
-decorb_n@vm046 [18:27:07] [/etc/fail2ban]
--> $ sudo fail2ban-client -d
+```console
+# fail2ban-client -d
 [...]
 ['set', 'sshd', 'maxretry', 7]
 ['set', 'sshd', 'bantime', 600]
